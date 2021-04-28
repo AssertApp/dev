@@ -1,6 +1,7 @@
 from flask import Flask, request, session, redirect, render_template
 from itsdangerous import URLSafeSerializer
 import mysql.connector, json
+from .components import URLValidate
 
 app = Flask(__name__)
 
@@ -13,11 +14,11 @@ def database():
     return mysql.connector.connect(host="host", user="user", password="password", database="database")
 
 def safeEncrypt(data):
-    auths = URLSafeSerializer("SECRETKEY1", "SECRETKEY2")
+    auths = URLSafeSerializer("itsdangerous1", "itsdangerous2")
     return auths.dumps(data)
 
 def safeDecrypt(data):
-    auths = URLSafeSerializer("SECRETKEY1", "SECRETKEY2")
+    auths = URLSafeSerializer("itsdangerous1", "itsdangerous2")
     return auths.loads(data)
 
 @app.route('/')
@@ -27,15 +28,21 @@ def index():
     uuid=session['id']
     conn = database()
     cur = conn.cursor()
-    cur.execute(f"select urls from developers where id='{uuid}';")
-    links = json.loads(cur.fetchall()[0][0])
-    urls = []
+    cur.execute(f"select uuid from developers where uuid='{uuid}';")
     try:
-        areThereLinks = True
-        for link in links:
+        assert cur.fetchall()[0][0]==uuid
+    except:
+        return redirect('/auth')
+    cur.execute(f"select url from devurls where devid='{uuid}';")
+    results = cur.fetchall()
+    try:
+        urls = []
+        for link in results[0]:
             urls.append(
                 {"url":link}
             )
+            areThereLinks = True
+        
     except:
         areThereLinks = False
     return render_template('developers.html', links=areThereLinks, urls=urls)
@@ -61,13 +68,13 @@ def authconfirm(token):
     except:
         return "Error"
     session['id']=uuid
-    cur.execute(f"select id from developers where id='{uuid}';")
+    cur.execute(f"select uuid from developers where uuid='{uuid}';")
     try:
         if not cur.fetchall()[0][0]==uuid:
             return "I have no idea what happened here"
     except:
         encrypted = safeEncrypt({'id': uuid})
-        cur.execute(f"insert into developers values ('{uuid}','{encrypted}','');")
+        cur.execute(f"insert into developers values ('{uuid}','{encrypted}');")
         conn.commit()
         conn.close()
     return redirect('/')
@@ -75,25 +82,32 @@ def authconfirm(token):
 @app.route('/submitLink', defaults={'link': None})
 @app.route('/submitLink/<link>')
 def submitLink(link):
-    link = request.args.get('link')
-    if not link:
+    try:
+        link = URLValidate(request.args.get('link'))
+    except:
         return redirect('/')
     if not 'id' in session:
         return redirect('/auth')
     uuid = session['id']
     conn = database()
     cur = conn.cursor()
-    cur.execute(f"select urls from developers where id='{uuid}';")
-    results = cur.fetchall()
+    cur.execute(f"select uuid from developers where uuid='{uuid}';")
     try:
-        data = json.loads(results[0][0])
-        if link in data:
-            return redirect('/')
-        data.append(link)
-        returnJSON = json.dumps(data)
+        assert cur.fetchall()[0][0]==uuid
     except:
-        returnJSON = json.dumps([link])
-    cur.execute(f"update developers set urls='{returnJSON}' where id='{uuid}';")
+        return redirect('/auth')
+    cur.execute(f"select url from devurls where devid='{uuid}';")
+    results = cur.fetchall()
+    executeSQL = True
+    for result in results:
+        if result[0].startswith(link):
+            cur.execute(f"update devurls set url='{link}' where url='{result[0]}';")
+            executeSQL = False
+        if link.startswith(result[0]):
+            return redirect('/')
+            executeSQL = False
+    if executeSQL:
+        cur.execute(f"insert into devurls values ('{uuid}','{link}');")
     conn.commit()
     conn.close()
     return redirect('/')
