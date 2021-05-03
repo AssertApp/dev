@@ -3,17 +3,18 @@
 		<title>Assert Developer Portal</title>
 		<link rel="icon" href="https://assertapp.net/media/logo.png">
 		<link rel="stylesheet" href="https://assertapp.net/media/style.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	</head>
 	<body>
 		<div class="box">
-			{% if links %}
+			{% if urls %}
 				<ul>
 				{% for url in urls %}
-					<li>{{url.url}}</li>
+				<li>{{url.url}}<a href="/delete?link={{url.uuid}}"><i class="fa fa-trash"></i></a></li>
 				{% endfor %}
 				</ul>
 			{% endif %}
-			{% if not links %}
+			{% if not urls %}
 				<p>You currently have no enabled URLs</p>
 			{% endif %}
 			<p><a href="learnmore">Learn more</a> about the Assert Developer portal</p>
