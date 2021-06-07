@@ -1,27 +1,182 @@
-<html>
-        <head>
-                <title>Assert Developer Portal</title>
-                <link rel="icon" href="https://assertapp.net/media/logo.png">
-                <link rel="stylesheet" href="https://assertapp.net/media/style.css">
-                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-        </head>
-        <body>
-                <div class="box">
-                        <form action="/submitLink">
-                                <input type="text" name="link" style="background-color: white">
-                                <input type="submit">
-                        </form>
-                        {% if urls %}
-                                <ul>
-                                {% for url in urls %}
-                                <li>{{url.url}}<a href="/delete?link={{url.uuid}}"><i class="fa fa-trash"></i></a></li>
-                                {% endfor %}
-                                </ul>
-                        {% endif %}
-                        {% if not urls %}
-                                <p>You currently have no enabled URLs</p>
-                        {% endif %}
-                        <a href="https://docs.assertapp.net">Go to the docs to find out how to implement Assert into your website</a>
-                </div>
-        </body>
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Assert Developer Portal</title>
+		<link rel="icon" href="https://assertapp.net/media/logo.png" />
+		<style>
+			:root {
+				--background: #6495ed;
+				--primary: #4788ee;
+				--primary-text: #ffffff;
+				--delete: red;
+				--delete-dark: darkred;
+				--card-background: #ffffff;
+				--card-text: #444444;
+				--card-text-secondary: #747474;
+			}
+			@media screen and (prefers-color-scheme: dark) {
+				:root {
+					--card-background: #444444;
+					--card-text: #ffffff;
+					--card-text-secondary: #e4e4e4;
+				}
+			}
+			* {
+				margin: 0;
+				border: 0;
+				padding: 0;
+				background: 0;
+				text-decoration: none;
+				box-sizing: border-box;
+				font-family: sans-serif;
+			}
+			html,
+			body {
+				height: 100%;
+				background-color: var(--background);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+			article {
+				gap: 4px;
+				border-radius: 4px;
+				padding: 10px;
+				background-color: var(--card-background);
+				color: var(--card-text);
+				width: 320px;
+				height: 440px;
+				display: flex;
+				flex-direction: column;
+				box-shadow: 4px 4px 14px 1px rgba(0, 0, 0, 0.64);
+			}
+			header {
+				padding-bottom: 6px;
+				margin-bottom: 12px;
+				border-bottom: 1px solid var(--card-text);
+			}
+			h1 {
+				font-weight: bold;
+				text-align: center;
+				font-size: 26px;
+			}
+			h2 {
+				font-weight: bold;
+				font-size: 18px;
+			}
+			main {
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+			}
+			form {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+			.input-container {
+				flex: 1;
+				gap: 4px;
+				display: flex;
+				flex-direction: row;
+			}
+			label {
+				font-size: 12px;
+			}
+			input[type="text"] {
+				flex: 1;
+				border: 1px solid var(--card-text);
+				border-radius: 4px;
+				padding: 6px;
+				font-size: 14px;
+			}
+			button[type="submit"] {
+				background-color: var(--primary);
+				color: var(--primary-text);
+				border-radius: 4px;
+				padding: 6px;
+				font-size: 14px;
+			}
+			section {
+				flex: 1;
+			}
+			.redirect-uri-list {
+				overflow: auto;
+				max-height: 200px;
+				margin-top: 4px;
+				list-style-type: none;
+				border-bottom: 1px solid var(--card-text);
+			}
+			.redirect-uri-container:before {
+				content: "»";
+			}
+			.redirect-uri-container {
+				border-top: 1px solid var(--card-text);
+			}
+			.redirect-uri {
+				color: var(--card-text-secondary);
+			}
+			.delete-link {
+				color: var(--delete);
+			}
+			.delete-link:active {
+				color: var(--delete-dark);
+			}
+		</style>
+	</head>
+	<body>
+		<article>
+			<header><h1>Assert developer portal</h1></header>
+			<main>
+				<h2>Redirect URIs</h2>
+				<form action="/submitLink">
+					<label for="url-input">Redirect URL *</label>
+					<div class="input-container">
+						<input
+							required
+							type="text"
+							name="url"
+							id="url-input"
+							placeholder="https://dev.assertapp.net/authconfirm"
+						/>
+
+						<button type="submit">Add URL</button>
+					</div>
+				</form>
+				<section>
+					<ul class="redirect-uri-list">
+						{% if urls %} {% for url in urls %}
+						<li class="redirect-uri-container">
+							<code class="redirect-uri">{{url.url}}</code>
+							<a
+								class="delete-link"
+								href="/delete?link={{url.uuid}}"
+								rel="noopener"
+								>Delete URI</a
+							>
+						</li>
+						{% endfor %} {% endif %} {% if not urls %}
+						<li class="redirect-uri-container">
+							<p>You currently have no enabled URLs</p>
+						</li>
+						{% endif %}
+					</ul>
+				</section>
+			</main>
+			<footer>
+				<p>
+					Go to
+					<a
+						href="https://docs.assertapp.net"
+						target="_blank"
+						rel="noopener"
+						>the docs</a
+					>
+					to find out how to implement Assert into your website
+				</p>
+			</footer>
+		</article>
+	</body>
 </html>
